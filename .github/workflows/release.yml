@@ -13,4 +13,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
-      - run: npx --yes @sorodriguezz/noah-cli@latest pack validate . --strict
+      - run: npx --yes @sorodriguez/noah-cli@latest pack validate . --strict

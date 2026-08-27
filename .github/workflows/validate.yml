@@ -17,19 +17,19 @@ jobs:
         with: { node-version: 24 }
 
       - name: validate the pack
-        run: npx --yes @sorodriguezz/noah-cli@latest pack validate . --strict
+        run: npx --yes @sorodriguez/noah-cli@latest pack validate . --strict
 
       - name: acceptance criterion 1 — init writes the rule file
         run: |
           mkdir -p /tmp/java && cd /tmp/java
           printf '<project><groupId>com.app</groupId></project>' > pom.xml
-          npx --yes @sorodriguezz/noah-cli@latest init --arch spring-hexagonal --ai cursor --pack "file:$GITHUB_WORKSPACE"
+          npx --yes @sorodriguez/noah-cli@latest init --arch spring-hexagonal --ai cursor --pack "file:$GITHUB_WORKSPACE"
           test -f .cursor/rules/spring-hexagonal.mdc
 
       - name: acceptance criterion 2 — generate produces the right class name
         run: |
           cd /tmp/java
-          npx --yes @sorodriguezz/noah-cli@latest g service PaymentService
+          npx --yes @sorodriguez/noah-cli@latest g service PaymentService
           test -f src/main/java/com/app/application/PaymentService.java
           test ! -f src/main/java/com/app/application/PaymentServiceService.java
 
@@ -39,7 +39,7 @@ jobs:
           mkdir -p src/main/java/com/app/controller
           printf 'package com.app.controller;\n\nimport java.sql.Connection;\n' \
             > src/main/java/com/app/controller/UserController.java
-          npx --yes @sorodriguezz/noah-cli@latest inspect validate > out.txt && exit 1
+          npx --yes @sorodriguez/noah-cli@latest inspect validate > out.txt && exit 1
           diff <(printf '%s\n' \
             '❌ ARCHITECTURE VIOLATION DETECTED' \
             'File: src/main/java/com/app/controller/UserController.java' \
@@ -49,7 +49,7 @@ jobs:
       - name: idempotence — a second run changes nothing
         run: |
           cd /tmp/java && git init -q && git add -A && git commit -qm base
-          npx --yes @sorodriguezz/noah-cli@latest sync
+          npx --yes @sorodriguez/noah-cli@latest sync
           git diff --exit-code
 
   windows-checkout:

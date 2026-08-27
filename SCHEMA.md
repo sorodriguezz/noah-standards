@@ -7,7 +7,7 @@ two repositories are separate, so the schema cannot be shared through an import:
 Run it before every commit:
 
 ```bash
-npx @sorodriguezz/noah-cli pack validate . --strict
+npx @sorodriguez/noah-cli pack validate . --strict
 ```
 
 ---

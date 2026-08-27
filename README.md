@@ -41,7 +41,7 @@ rule that section numbers are never renumbered.
 Then validate before you commit:
 
 ```bash
-npx @sorodriguezz/noah-cli pack validate . --strict
+npx @sorodriguez/noah-cli pack validate . --strict
 ```
 
 CI runs the same command plus the three acceptance criteria against fixture
