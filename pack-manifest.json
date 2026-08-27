@@ -1,0 +1,1269 @@
+{
+  "$schema": "./pack-manifest.schema.json",
+  "schemaVersion": 1,
+  "pack": {
+    "id": "noah",
+    "name": "Noah Official Standards",
+    "version": "1.0.0",
+    "description": "Architectures, patterns, skills and AI adapters maintained alongside the Noah engine.",
+    "license": "MIT"
+  },
+  "requires": {
+    "cli": "1.0.0",
+    "features": [
+      "arch-extends",
+      "skill-capture",
+      "adapter-limits",
+      "pattern-rules",
+      "template-blocks",
+      "import-region"
+    ]
+  },
+  "ignore": [
+    "**/*.min.js",
+    "**/*.generated.*",
+    "**/migrations/**"
+  ],
+  "reporting": {
+    "violationTemplate": "❌ ARCHITECTURE VIOLATION DETECTED\nFile: {{file}}\nIssue: {{message}}\nRule Reference: {{ruleDoc}} (Section {{section}})",
+    "separator": "\n",
+    "exitCode": 1
+  },
+  "inspect": {
+    "ignore": [
+      "**/*.snap",
+      "**/__snapshots__/**"
+    ],
+    "maxDepth": 4,
+    "maxEntries": 400
+  },
+  "variables": [
+    {
+      "id": "projectName",
+      "displayName": "Project name",
+      "description": "human-readable project name",
+      "sources": [
+        {
+          "from": "flag",
+          "name": "project"
+        },
+        {
+          "from": "config",
+          "key": "projectName"
+        },
+        {
+          "from": "detect",
+          "file": "package.json",
+          "regex": "\"name\"\\s*:\\s*\"([^\"]+)\"",
+          "group": 1
+        },
+        {
+          "from": "detect",
+          "file": "go.mod",
+          "regex": "^module\\s+\\S*/([^/\\s]+)\\s*$",
+          "group": 1
+        },
+        {
+          "from": "literal",
+          "value": "app"
+        }
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "id": "typescript",
+      "displayName": "TypeScript",
+      "extensions": [
+        ".ts",
+        ".tsx",
+        ".mts",
+        ".cts"
+      ],
+      "manifestFiles": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "ignore": [
+        "**/*.d.ts",
+        "**/*.spec.ts",
+        "**/*.test.ts"
+      ],
+      "comment": {
+        "line": "//",
+        "blockStart": "/*",
+        "blockEnd": "*/",
+        "strings": [
+          "\"",
+          "'",
+          "`"
+        ]
+      },
+      "install": "npm install {{dep}}",
+      "imports": [
+        {
+          "id": "esm",
+          "regex": "^[ \\t]*import\\s+(?:[^;'\"]*?from\\s+)?['\"]([^'\"]+)['\"]"
+        },
+        {
+          "id": "reexport",
+          "regex": "^[ \\t]*export\\s+[^;'\"]*?from\\s+['\"]([^'\"]+)['\"]"
+        },
+        {
+          "id": "require",
+          "regex": "\\brequire\\(\\s*['\"]([^'\"]+)['\"]\\s*\\)"
+        },
+        {
+          "id": "dynamic",
+          "regex": "\\bimport\\(\\s*['\"]([^'\"]+)['\"]\\s*\\)"
+        }
+      ]
+    },
+    {
+      "id": "java",
+      "displayName": "Java",
+      "extensions": [
+        ".java"
+      ],
+      "manifestFiles": [
+        "pom.xml",
+        "build.gradle",
+        "build.gradle.kts"
+      ],
+      "ignore": [
+        "**/generated/**"
+      ],
+      "comment": {
+        "line": "//",
+        "blockStart": "/*",
+        "blockEnd": "*/",
+        "strings": [
+          "\"\"\"",
+          "\"",
+          "'"
+        ]
+      },
+      "install": "add {{dep}} to pom.xml",
+      "imports": [
+        {
+          "id": "import",
+          "regex": "^[ \\t]*import\\s+(?:static\\s+)?([A-Za-z_$][\\w.$]*(?:\\.\\*)?)\\s*;"
+        }
+      ]
+    },
+    {
+      "id": "go",
+      "displayName": "Go",
+      "extensions": [
+        ".go"
+      ],
+      "manifestFiles": [
+        "go.mod"
+      ],
+      "comment": {
+        "line": "//",
+        "blockStart": "/*",
+        "blockEnd": "*/",
+        "strings": [
+          "`",
+          "\"",
+          "'"
+        ]
+      },
+      "install": "go get {{dep}}",
+      "imports": [
+        {
+          "id": "single",
+          "regex": "^[ \\t]*import\\s+(?:[\\w.]+\\s+)?\"([^\"]+)\""
+        },
+        {
+          "id": "block",
+          "regex": "^[ \\t]+(?:[\\w.]+[ \\t]+)?\"([^\"]+)\"",
+          "within": {
+            "open": "^import[ \\t]*\\($",
+            "close": "^\\)$"
+          }
+        }
+      ]
+    },
+    {
+      "id": "yaml",
+      "displayName": "YAML",
+      "extensions": [
+        ".yml",
+        ".yaml"
+      ],
+      "comment": {
+        "line": "#",
+        "strings": [
+          "\"",
+          "'"
+        ]
+      }
+    },
+    {
+      "id": "dockerfile",
+      "displayName": "Dockerfile",
+      "extensions": [
+        "Dockerfile",
+        ".dockerfile"
+      ],
+      "comment": {
+        "line": "#",
+        "strings": [
+          "\"",
+          "'"
+        ]
+      }
+    },
+    {
+      "id": "shell",
+      "displayName": "Shell",
+      "extensions": [
+        ".sh",
+        ".bash"
+      ],
+      "comment": {
+        "line": "#",
+        "strings": [
+          "\"",
+          "'"
+        ]
+      }
+    }
+  ],
+  "architectures": [
+    {
+      "id": "nest-clean",
+      "language": "typescript",
+      "framework": "nestjs",
+      "displayName": "NestJS Clean Architecture",
+      "description": "Controllers, use cases, a framework-free domain and infrastructure adapters.",
+      "tags": [
+        "backend",
+        "clean",
+        "ddd"
+      ],
+      "path": "architectures/typescript/nest-clean",
+      "variables": [
+        {
+          "id": "srcRoot",
+          "displayName": "Source root",
+          "sources": [
+            {
+              "from": "flag",
+              "name": "src-root"
+            },
+            {
+              "from": "config",
+              "key": "srcRoot"
+            },
+            {
+              "from": "literal",
+              "value": "src"
+            }
+          ]
+        },
+        {
+          "id": "moduleName",
+          "displayName": "Module",
+          "description": "module directory this belongs to",
+          "sources": [
+            {
+              "from": "flag",
+              "name": "module"
+            },
+            {
+              "from": "config",
+              "key": "moduleName"
+            },
+            {
+              "from": "derive",
+              "template": "{{name}}"
+            }
+          ],
+          "transform": [
+            [
+              "kebab"
+            ],
+            [
+              "stripSuffix",
+              "-service"
+            ],
+            [
+              "stripSuffix",
+              "-controller"
+            ]
+          ]
+        },
+        {
+          "id": "serviceName",
+          "displayName": "Service name",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{name}}"
+            }
+          ],
+          "validate": {
+            "regex": "^[A-Za-z][A-Za-z0-9 _-]*$",
+            "message": "a name may contain letters, digits, spaces, '-' and '_'"
+          }
+        },
+        {
+          "id": "serviceClass",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{serviceName}}"
+            }
+          ],
+          "transform": [
+            [
+              "pascal"
+            ],
+            [
+              "ensureSuffix",
+              "Service"
+            ]
+          ]
+        },
+        {
+          "id": "serviceFile",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{serviceName}}"
+            }
+          ],
+          "transform": [
+            [
+              "kebab"
+            ],
+            [
+              "stripSuffix",
+              "-service"
+            ]
+          ]
+        },
+        {
+          "id": "domainClass",
+          "description": "domain class name, derived from the service name",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{serviceName}}"
+            }
+          ],
+          "transform": [
+            [
+              "pascal"
+            ],
+            [
+              "stripSuffix",
+              "Service"
+            ]
+          ]
+        }
+      ],
+      "layers": [
+        {
+          "id": "controller",
+          "displayName": "Controller",
+          "section": "2.1",
+          "include": [
+            "{{srcRoot}}/**/*.controller.ts",
+            "{{srcRoot}}/**/presentation/**"
+          ]
+        },
+        {
+          "id": "application",
+          "displayName": "Application",
+          "section": "3.1",
+          "include": [
+            "{{srcRoot}}/**/application/**",
+            "{{srcRoot}}/**/*.use-case.ts",
+            "{{srcRoot}}/**/*.service.ts"
+          ],
+          "exclude": [
+            "{{srcRoot}}/**/infrastructure/**"
+          ]
+        },
+        {
+          "id": "domain",
+          "displayName": "Domain",
+          "section": "4.1",
+          "include": [
+            "{{srcRoot}}/**/domain/**",
+            "{{srcRoot}}/**/*.entity.ts"
+          ]
+        },
+        {
+          "id": "infrastructure",
+          "displayName": "Infrastructure",
+          "section": "5.0",
+          "include": [
+            "{{srcRoot}}/**/infrastructure/**",
+            "{{srcRoot}}/**/*.repository.ts"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "controller-no-persistence",
+          "layer": "controller",
+          "section": "2.1",
+          "forbid": [
+            "^typeorm$",
+            "^@prisma/client$",
+            "^mongoose$",
+            "^pg$",
+            "^mysql2?$",
+            "^knex$"
+          ],
+          "message": "Direct import of '{{import}}' in Controller level."
+        },
+        {
+          "id": "domain-no-framework",
+          "layer": "domain",
+          "section": "4.1",
+          "forbid": [
+            "^@nestjs/",
+            "^typeorm$",
+            "^@prisma/client$",
+            "^axios$",
+            "^express$",
+            "^ioredis$"
+          ],
+          "message": "Domain imports '{{import}}'. The domain layer must stay free of framework and infrastructure dependencies."
+        },
+        {
+          "id": "application-no-http",
+          "layer": "application",
+          "section": "3.1",
+          "forbid": [
+            "^express$",
+            "^axios$",
+            "^node-fetch$",
+            "^@nestjs/platform-"
+          ],
+          "message": "Application layer imports '{{import}}'. HTTP concerns belong in a controller or an infrastructure adapter."
+        }
+      ]
+    },
+    {
+      "id": "bff-nest",
+      "extends": "nest-clean",
+      "language": "typescript",
+      "framework": "nestjs",
+      "displayName": "NestJS BFF (Backend For Frontend)",
+      "description": "API aggregation, view DTOs and token handling, on top of nest-clean.",
+      "tags": [
+        "backend",
+        "bff",
+        "aggregation"
+      ],
+      "path": "architectures/typescript/bff-nest",
+      "layers": [
+        {
+          "id": "aggregation",
+          "displayName": "Aggregation",
+          "section": "2.2",
+          "include": [
+            "{{srcRoot}}/**/aggregation/**",
+            "{{srcRoot}}/**/*.aggregator.ts"
+          ]
+        },
+        {
+          "id": "view",
+          "displayName": "View model",
+          "section": "2.3",
+          "include": [
+            "{{srcRoot}}/**/view/**",
+            "{{srcRoot}}/**/*.view-dto.ts"
+          ]
+        },
+        {
+          "id": "domain",
+          "$op": "remove"
+        }
+      ],
+      "rules": [
+        {
+          "id": "domain-no-framework",
+          "$op": "remove"
+        },
+        {
+          "id": "view-no-upstream-types",
+          "layer": "view",
+          "section": "2.3",
+          "forbid": [
+            "^\\.{1,2}/.*\\.client$",
+            "^@upstream/"
+          ],
+          "message": "View model imports '{{import}}'. A view DTO must not depend on upstream service types; map them explicitly."
+        }
+      ]
+    },
+    {
+      "id": "api-gateway-nest",
+      "extends": "nest-clean",
+      "language": "typescript",
+      "framework": "nestjs",
+      "displayName": "NestJS API Gateway",
+      "description": "Edge concerns: middleware, rate limiting, CORS and authentication.",
+      "tags": [
+        "backend",
+        "gateway",
+        "edge"
+      ],
+      "path": "architectures/typescript/api-gateway-nest",
+      "layers": [
+        {
+          "id": "middleware",
+          "displayName": "Middleware",
+          "section": "2.2",
+          "include": [
+            "{{srcRoot}}/**/middleware/**",
+            "{{srcRoot}}/**/*.middleware.ts",
+            "{{srcRoot}}/**/*.guard.ts"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "middleware-no-domain",
+          "layer": "middleware",
+          "section": "2.2",
+          "forbid": [
+            "/domain/",
+            "^@prisma/client$",
+            "^typeorm$"
+          ],
+          "message": "Middleware imports '{{import}}'. Edge middleware must not reach into domain or persistence code."
+        }
+      ]
+    },
+    {
+      "id": "spring-hexagonal",
+      "language": "java",
+      "framework": "spring-boot",
+      "displayName": "Spring Boot Hexagonal",
+      "description": "Ports and adapters: controllers in, a pure domain, and persistence adapters out.",
+      "tags": [
+        "backend",
+        "hexagonal",
+        "ports-and-adapters"
+      ],
+      "path": "architectures/java/spring-hexagonal",
+      "variables": [
+        {
+          "id": "srcRoot",
+          "displayName": "Source root",
+          "sources": [
+            {
+              "from": "flag",
+              "name": "src-root"
+            },
+            {
+              "from": "config",
+              "key": "srcRoot"
+            },
+            {
+              "from": "literal",
+              "value": "src/main/java"
+            }
+          ]
+        },
+        {
+          "id": "packageName",
+          "displayName": "Base package",
+          "description": "root Java package, e.g. com.example.app",
+          "sources": [
+            {
+              "from": "flag",
+              "name": "package"
+            },
+            {
+              "from": "config",
+              "key": "packageName"
+            },
+            {
+              "from": "detect",
+              "file": "pom.xml",
+              "regex": "<groupId>([^<]+)</groupId>",
+              "group": 1
+            },
+            {
+              "from": "literal",
+              "value": "com.example.app"
+            }
+          ],
+          "validate": {
+            "regex": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$",
+            "message": "a Java package is lowercase segments separated by dots"
+          }
+        },
+        {
+          "id": "packagePath",
+          "description": "base package as a directory path",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{packageName}}"
+            }
+          ],
+          "transform": [
+            [
+              "path"
+            ]
+          ]
+        },
+        {
+          "id": "serviceName",
+          "displayName": "Service name",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{name}}"
+            }
+          ],
+          "validate": {
+            "regex": "^[A-Za-z][A-Za-z0-9 _-]*$",
+            "message": "a name may contain letters, digits, spaces, '-' and '_'"
+          }
+        },
+        {
+          "id": "serviceClass",
+          "description": "generated class name",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{serviceName}}"
+            }
+          ],
+          "transform": [
+            [
+              "pascal"
+            ],
+            [
+              "ensureSuffix",
+              "Service"
+            ]
+          ]
+        },
+        {
+          "id": "domainName",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{serviceName}}"
+            }
+          ],
+          "transform": [
+            [
+              "pascal"
+            ],
+            [
+              "stripSuffix",
+              "Service"
+            ]
+          ]
+        }
+      ],
+      "layers": [
+        {
+          "id": "controller",
+          "displayName": "Controller",
+          "section": "2.1",
+          "include": [
+            "{{srcRoot}}/**/controller/**",
+            "{{srcRoot}}/**/adapter/in/**",
+            "{{srcRoot}}/**/*Controller.java"
+          ]
+        },
+        {
+          "id": "application",
+          "displayName": "Application",
+          "section": "3.1",
+          "include": [
+            "{{srcRoot}}/**/application/**",
+            "{{srcRoot}}/**/usecase/**"
+          ]
+        },
+        {
+          "id": "domain",
+          "displayName": "Domain",
+          "section": "4.1",
+          "include": [
+            "{{srcRoot}}/**/domain/**"
+          ]
+        },
+        {
+          "id": "persistence",
+          "displayName": "Persistence adapter",
+          "section": "5.0",
+          "include": [
+            "{{srcRoot}}/**/adapter/out/**",
+            "{{srcRoot}}/**/infrastructure/**"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "controller-no-persistence",
+          "layer": "controller",
+          "section": "2.1",
+          "forbid": [
+            "^java\\.sql\\.",
+            "^javax\\.sql\\.",
+            "^org\\.hibernate\\.",
+            "^org\\.springframework\\.jdbc\\.",
+            "^jakarta\\.persistence\\."
+          ],
+          "message": "Direct import of '{{import}}' in Controller level."
+        },
+        {
+          "id": "domain-no-framework",
+          "layer": "domain",
+          "section": "4.1",
+          "forbid": [
+            "^org\\.springframework\\.",
+            "^jakarta\\.persistence\\.",
+            "^javax\\.persistence\\.",
+            "^java\\.sql\\.",
+            "^com\\.fasterxml\\.jackson\\."
+          ],
+          "message": "Domain imports '{{import}}'. The domain must not depend on Spring, JPA or serialization frameworks."
+        },
+        {
+          "id": "application-no-web",
+          "layer": "application",
+          "section": "3.1",
+          "forbid": [
+            "^org\\.springframework\\.web\\.",
+            "^jakarta\\.servlet\\.",
+            "^javax\\.servlet\\."
+          ],
+          "message": "Application layer imports '{{import}}'. Web concerns belong in an inbound adapter."
+        }
+      ]
+    },
+    {
+      "id": "go-clean",
+      "language": "go",
+      "framework": "gin",
+      "displayName": "Go Clean Architecture",
+      "description": "Handlers, use cases, a dependency-free domain and repository adapters.",
+      "tags": [
+        "backend",
+        "clean"
+      ],
+      "path": "architectures/go/clean-arch",
+      "variables": [
+        {
+          "id": "moduleName",
+          "displayName": "Go module",
+          "sources": [
+            {
+              "from": "flag",
+              "name": "module"
+            },
+            {
+              "from": "config",
+              "key": "moduleName"
+            },
+            {
+              "from": "detect",
+              "file": "go.mod",
+              "regex": "^module\\s+(\\S+)\\s*$",
+              "group": 1
+            },
+            {
+              "from": "literal",
+              "value": "example.com/app"
+            }
+          ]
+        },
+        {
+          "id": "serviceName",
+          "displayName": "Service name",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{name}}"
+            }
+          ],
+          "validate": {
+            "regex": "^[A-Za-z][A-Za-z0-9 _-]*$",
+            "message": "a name may contain letters, digits, spaces, '-' and '_'"
+          }
+        },
+        {
+          "id": "serviceType",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{serviceName}}"
+            }
+          ],
+          "transform": [
+            [
+              "pascal"
+            ],
+            [
+              "ensureSuffix",
+              "Service"
+            ]
+          ]
+        },
+        {
+          "id": "servicePkg",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{serviceName}}"
+            }
+          ],
+          "transform": [
+            [
+              "lower"
+            ],
+            [
+              "stripSuffix",
+              "service"
+            ]
+          ]
+        },
+        {
+          "id": "serviceFile",
+          "sources": [
+            {
+              "from": "derive",
+              "template": "{{serviceName}}"
+            }
+          ],
+          "transform": [
+            [
+              "snake"
+            ],
+            [
+              "stripSuffix",
+              "_service"
+            ]
+          ]
+        }
+      ],
+      "layers": [
+        {
+          "id": "handler",
+          "displayName": "Handler",
+          "section": "2.1",
+          "include": [
+            "internal/handler/**",
+            "internal/adapter/http/**"
+          ]
+        },
+        {
+          "id": "usecase",
+          "displayName": "Use case",
+          "section": "3.1",
+          "include": [
+            "internal/usecase/**",
+            "internal/service/**"
+          ]
+        },
+        {
+          "id": "domain",
+          "displayName": "Domain",
+          "section": "4.1",
+          "include": [
+            "internal/domain/**",
+            "internal/entity/**"
+          ]
+        },
+        {
+          "id": "repository",
+          "displayName": "Repository",
+          "section": "5.0",
+          "include": [
+            "internal/repository/**",
+            "internal/adapter/db/**"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "handler-no-persistence",
+          "layer": "handler",
+          "section": "2.1",
+          "forbid": [
+            "^database/sql$",
+            "^gorm\\.io/",
+            "^github\\.com/jackc/pgx",
+            "^github\\.com/lib/pq$"
+          ],
+          "message": "Direct import of '{{import}}' in Handler level."
+        },
+        {
+          "id": "domain-no-framework",
+          "layer": "domain",
+          "section": "4.1",
+          "forbid": [
+            "^github\\.com/gin-gonic/gin$",
+            "^gorm\\.io/",
+            "^database/sql$",
+            "^net/http$",
+            "^github\\.com/redis/"
+          ],
+          "message": "Domain imports '{{import}}'. The domain package must not depend on the web framework or on storage drivers."
+        },
+        {
+          "id": "usecase-no-web",
+          "layer": "usecase",
+          "section": "3.1",
+          "forbid": [
+            "^github\\.com/gin-gonic/gin$",
+            "^net/http$"
+          ],
+          "message": "Use case imports '{{import}}'. HTTP belongs in a handler."
+        }
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "id": "redis-cache",
+      "displayName": "Redis cache (cache-aside)",
+      "description": "Cache-aside reads, explicit TTLs and invalidation on write.",
+      "section": "5.1",
+      "path": "patterns/redis-cache",
+      "appliesTo": {
+        "languages": [
+          "typescript",
+          "java",
+          "go"
+        ]
+      },
+      "deps": {
+        "typescript": [
+          "ioredis"
+        ],
+        "java": [
+          "org.springframework.boot:spring-boot-starter-data-redis"
+        ],
+        "go": [
+          "github.com/redis/go-redis/v9"
+        ]
+      },
+      "rules": [
+        {
+          "id": "no-cache-in-domain",
+          "layer": "domain",
+          "section": "5.1",
+          "forbid": [
+            "^ioredis$",
+            "^redis$",
+            "^github\\.com/redis/",
+            "^org\\.springframework\\.data\\.redis\\."
+          ],
+          "message": "Domain imports the cache client '{{import}}'. Caching is an infrastructure concern; keep it behind a port."
+        }
+      ]
+    },
+    {
+      "id": "circuit-breaker",
+      "displayName": "Circuit breaker",
+      "description": "Resilience around every outbound call: timeouts, retries with backoff and a breaker.",
+      "section": "5.2",
+      "path": "patterns/circuit-breaker",
+      "appliesTo": {
+        "languages": [
+          "typescript",
+          "java",
+          "go"
+        ]
+      },
+      "deps": {
+        "typescript": [
+          "cockatiel"
+        ],
+        "java": [
+          "io.github.resilience4j:resilience4j-spring-boot3"
+        ],
+        "go": [
+          "github.com/sony/gobreaker"
+        ]
+      },
+      "rules": [
+        {
+          "id": "no-raw-http-in-application",
+          "layer": "application",
+          "section": "5.2",
+          "forbid": [
+            "^axios$",
+            "^node-fetch$",
+            "^got$"
+          ],
+          "message": "Application layer calls '{{import}}' directly. Outbound calls must go through a resilience-wrapped adapter."
+        }
+      ]
+    },
+    {
+      "id": "cqrs",
+      "displayName": "CQRS",
+      "description": "Commands and queries as separate types, each with its own handler.",
+      "section": "5.3",
+      "path": "patterns/cqrs",
+      "appliesTo": {
+        "languages": [
+          "typescript",
+          "java",
+          "go"
+        ]
+      },
+      "deps": {
+        "typescript": [
+          "@nestjs/cqrs"
+        ],
+        "java": [],
+        "go": []
+      }
+    }
+  ],
+  "skills": [
+    {
+      "id": "prisma",
+      "displayName": "Prisma",
+      "category": "database",
+      "description": "Schema, migrations and the generated client.",
+      "path": "skills/prisma",
+      "languages": [
+        "typescript"
+      ],
+      "detect": [
+        {
+          "dep": "@prisma/client",
+          "ecosystem": "npm",
+          "capture": {
+            "version": "version"
+          }
+        },
+        {
+          "file": "prisma/schema.prisma",
+          "match": "provider\\s*=\\s*\"([a-z]+)\"",
+          "capture": {
+            "provider": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "postgresql",
+      "displayName": "PostgreSQL",
+      "category": "database",
+      "path": "skills/postgresql",
+      "detect": [
+        {
+          "file": "docker-compose.y*ml",
+          "match": "image:\\s*[\"']?(postgres[^\"'\\s]*)",
+          "capture": {
+            "image": 1
+          }
+        },
+        {
+          "any": [
+            {
+              "dep": "pg",
+              "ecosystem": "npm"
+            },
+            {
+              "dep": "org.postgresql:postgresql",
+              "ecosystem": "maven"
+            },
+            {
+              "dep": "github.com/lib/pq",
+              "ecosystem": "go"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "redis",
+      "displayName": "Redis",
+      "category": "cache",
+      "path": "skills/redis",
+      "detect": [
+        {
+          "file": "docker-compose.y*ml",
+          "match": "image:\\s*[\"']?(redis[^\"'\\s]*)",
+          "capture": {
+            "image": 1
+          }
+        },
+        {
+          "any": [
+            {
+              "dep": "ioredis",
+              "ecosystem": "npm"
+            },
+            {
+              "dep": "github.com/redis/go-redis/v9",
+              "ecosystem": "go"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "docker",
+      "displayName": "Docker",
+      "category": "infrastructure",
+      "path": "skills/docker",
+      "detect": [
+        {
+          "file": "Dockerfile"
+        },
+        {
+          "file": "docker-compose.y*ml"
+        }
+      ]
+    },
+    {
+      "id": "nestjs",
+      "displayName": "NestJS",
+      "category": "framework",
+      "path": "skills/nestjs",
+      "languages": [
+        "typescript"
+      ],
+      "detect": [
+        {
+          "dep": "@nestjs/core",
+          "ecosystem": "npm",
+          "capture": {
+            "version": "version"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tailwind",
+      "displayName": "Tailwind CSS",
+      "category": "frontend",
+      "path": "skills/tailwind",
+      "languages": [
+        "typescript"
+      ],
+      "detect": [
+        {
+          "dep": "tailwindcss",
+          "ecosystem": "npm",
+          "capture": {
+            "version": "version"
+          }
+        }
+      ]
+    },
+    {
+      "id": "flyway",
+      "displayName": "Flyway",
+      "category": "database",
+      "path": "skills/flyway",
+      "languages": [
+        "java"
+      ],
+      "detect": [
+        {
+          "dep": "org.flywaydb:flyway-core",
+          "ecosystem": "maven"
+        },
+        {
+          "file": "src/main/resources/db/migration"
+        }
+      ]
+    },
+    {
+      "id": "testcontainers",
+      "displayName": "Testcontainers",
+      "category": "testing",
+      "path": "skills/testcontainers",
+      "detect": [
+        {
+          "any": [
+            {
+              "dep": "testcontainers",
+              "ecosystem": "npm"
+            },
+            {
+              "dep": "org.testcontainers:junit-jupiter",
+              "ecosystem": "maven"
+            },
+            {
+              "dep": "github.com/testcontainers/testcontainers-go",
+              "ecosystem": "go"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "features": {
+    "docPath": "docs/sdd/{{featureSlug}}.md",
+    "template": "templates/feature/sdd.md.tpl",
+    "requiredSections": [
+      "Inputs",
+      "Outputs",
+      "Business invariants",
+      "Edge cases",
+      "Domain rules"
+    ],
+    "ruleTemplate": "When editing the **{{featureName}}** feature, the AI MUST read and validate its behaviour against the business rules described in `{{docPath}}` before proposing any change."
+  },
+  "aiAdapters": [
+    {
+      "id": "cursor",
+      "displayName": "Cursor",
+      "mode": "file",
+      "target": ".cursor/rules/{{name}}.mdc",
+      "header": "ai-adapters/cursor/header.tpl",
+      "limits": {
+        "maxBytes": 32768,
+        "onExceed": "warn"
+      },
+      "tierMap": {
+        "always": "true",
+        "glob": "false"
+      }
+    },
+    {
+      "id": "claude-code",
+      "displayName": "Claude Code",
+      "mode": "merge",
+      "target": "CLAUDE.md"
+    },
+    {
+      "id": "windsurf",
+      "displayName": "Windsurf",
+      "mode": "file",
+      "target": ".windsurf/rules/{{name}}.md",
+      "header": "ai-adapters/windsurf/header.tpl",
+      "limits": {
+        "maxBytes": 12288,
+        "onExceed": "warn"
+      },
+      "tierMap": {
+        "always": "always_on",
+        "glob": "glob"
+      }
+    },
+    {
+      "id": "copilot",
+      "displayName": "GitHub Copilot",
+      "mode": "file",
+      "target": ".github/instructions/{{name}}.instructions.md",
+      "header": "ai-adapters/copilot/header.tpl"
+    }
+  ]
+}

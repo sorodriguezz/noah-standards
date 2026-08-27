@@ -1,0 +1,16 @@
+name: release
+
+# The pack has no build and nothing to publish: a tag IS the release. This job
+# exists to prove the tagged tree is valid before anyone's `noah init` pins it.
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: npx --yes @sorodriguezz/noah-cli@latest pack validate . --strict

@@ -1,0 +1,60 @@
+name: validate
+
+# `noah pack validate` is the ONLY contract between this repo and noah-cli.
+# The two are separate repositories, so nothing else stops the manifest schema
+# from drifting away from the engine that reads it.
+
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+
+      - name: validate the pack
+        run: npx --yes @sorodriguezz/noah-cli@latest pack validate . --strict
+
+      - name: acceptance criterion 1 — init writes the rule file
+        run: |
+          mkdir -p /tmp/java && cd /tmp/java
+          printf '<project><groupId>com.app</groupId></project>' > pom.xml
+          npx --yes @sorodriguezz/noah-cli@latest init --arch spring-hexagonal --ai cursor --pack "file:$GITHUB_WORKSPACE"
+          test -f .cursor/rules/spring-hexagonal.mdc
+
+      - name: acceptance criterion 2 — generate produces the right class name
+        run: |
+          cd /tmp/java
+          npx --yes @sorodriguezz/noah-cli@latest g service PaymentService
+          test -f src/main/java/com/app/application/PaymentService.java
+          test ! -f src/main/java/com/app/application/PaymentServiceService.java
+
+      - name: acceptance criterion 3 — the violation block, byte for byte
+        run: |
+          cd /tmp/java
+          mkdir -p src/main/java/com/app/controller
+          printf 'package com.app.controller;\n\nimport java.sql.Connection;\n' \
+            > src/main/java/com/app/controller/UserController.java
+          npx --yes @sorodriguezz/noah-cli@latest inspect validate > out.txt && exit 1
+          diff <(printf '%s\n' \
+            '❌ ARCHITECTURE VIOLATION DETECTED' \
+            'File: src/main/java/com/app/controller/UserController.java' \
+            "Issue: Direct import of 'java.sql.Connection' in Controller level." \
+            'Rule Reference: .cursor/rules/spring-hexagonal.mdc (Section 2.1)') out.txt
+
+      - name: idempotence — a second run changes nothing
+        run: |
+          cd /tmp/java && git init -q && git add -A && git commit -qm base
+          npx --yes @sorodriguezz/noah-cli@latest sync
+          git diff --exit-code
+
+  windows-checkout:
+    # Not a build: proof that every path in this pack can exist on NTFS. A
+    # template named `{{x|pascal}}.tpl` makes `git clone` itself fail here.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
