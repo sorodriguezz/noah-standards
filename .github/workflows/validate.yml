@@ -47,8 +47,17 @@ jobs:
             'Rule Reference: .cursor/rules/spring-hexagonal.mdc (Section 2.1)') out.txt
 
       - name: idempotence — a second run changes nothing
+        # A fresh runner has no git identity, so the flags are not optional.
+        env:
+          GIT_AUTHOR_NAME: CI
+          GIT_AUTHOR_EMAIL: ci@example.com
+          GIT_COMMITTER_NAME: CI
+          GIT_COMMITTER_EMAIL: ci@example.com
         run: |
-          cd /tmp/java && git init -q && git add -A && git commit -qm base
+          cd /tmp/java
+          git init -q
+          git add -A
+          git commit -qm baseline
           npx --yes @sorodriguez/noah-cli@latest sync
           git diff --exit-code
 
